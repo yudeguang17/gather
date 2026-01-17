@@ -1,9 +1,9 @@
-// Copyright 2020 ratelimit Author(https://github.com/yudeguang/gather). All Rights Reserved.
+// Copyright 2020 ratelimit Author(https://github.com/yudeguang17/gather). All Rights Reserved.
 //
 // This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with this file,
-// You can obtain one at https://github.com/yudeguang/gather.
-//模拟浏览器进行数据采集包,可较方便的定义http头，同时全自动化处理cookies
+// You can obtain one at https://github.com/yudeguang17/gather.
+// 模拟浏览器进行数据采集包,可较方便的定义http头，同时全自动化处理cookies
 package gather
 
 import (
@@ -65,7 +65,24 @@ func (g *GatherStruct) PostUtil(URL, refererURL, cookies string, postMap map[str
 	return g.request(req)
 }
 
-//POST二进制
+func (g *GatherStruct) PostUtilReq(URL, refererURL, cookies string, postMap map[string]string) (*http.Request, error) {
+	g.locker.Lock()
+	defer g.locker.Unlock()
+	postValues := url.Values{}
+	for k, v := range postMap {
+		postValues.Set(k, v)
+	}
+	postDataStr := postValues.Encode()
+	postDataBytes := []byte(postDataStr)
+	postBytesReader := bytes.NewReader(postDataBytes)
+	if _, eixst := g.safeHeaders.Load("Content-Type"); !eixst {
+		g.safeHeaders.Store("Content-Type", "application/x-www-form-urlencoded; param=value")
+	}
+	return g.newHttpRequest("POST", URL, refererURL, cookies, postBytesReader)
+
+}
+
+// POST二进制
 func (g *GatherStruct) PostBytes(URL, refererURL, cookies string, postBytes []byte) (html, redirectURL string, err error) {
 	g.locker.Lock()
 	defer g.locker.Unlock()
@@ -163,23 +180,23 @@ func (g *GatherStruct) PostJsonUtil(URL, refererURL, cookies, postJson string) (
 	return g.request(req)
 }
 
-//multipart/form-data 上传文件的结构体
+// multipart/form-data 上传文件的结构体
 type multipartPostFile struct {
 	fileName    string
 	contentType string
 	content     []byte
 }
 
-//multipart/form-data方式POST数据,手动增加cookies
+// multipart/form-data方式POST数据,手动增加cookies
 func (g *GatherStruct) PostMultipartformData(URL, refererURL, cookies, boundary string, postValueMap map[string]string, postFileMap map[string]multipartPostFile) (html, redirectURL string, err error) {
 	return g.PostMultipartformDataUtil(URL, refererURL, "", boundary, postValueMap, postFileMap)
 }
 
-//multipart/form-data方式POST数据,自动继承先前的cookies
-//boundary指post“分割边界”,这个“边界数据”不能在内容其他地方出现,一般来说使用一段从概率上说“几乎不可能”的数据即可
-//postValueMap指post的普通文本,只包含name和value
-//postFileMap指上传的文件,比如图片,需在调用此函数前自行转换成[]byte,当然POST协议也可使用base64编码后,不过在此忽略此用法,base64也请转换成[]byte
-//multipart/form-data数据格式参见标准库中： mime\multipart\testdata\nested-mime,注意此处file文件是用的base64编码后的
+// multipart/form-data方式POST数据,自动继承先前的cookies
+// boundary指post“分割边界”,这个“边界数据”不能在内容其他地方出现,一般来说使用一段从概率上说“几乎不可能”的数据即可
+// postValueMap指post的普通文本,只包含name和value
+// postFileMap指上传的文件,比如图片,需在调用此函数前自行转换成[]byte,当然POST协议也可使用base64编码后,不过在此忽略此用法,base64也请转换成[]byte
+// multipart/form-data数据格式参见标准库中： mime\multipart\testdata\nested-mime,注意此处file文件是用的base64编码后的
 func (g *GatherStruct) PostMultipartformDataUtil(URL, refererURL, cookies, boundary string, postValueMap map[string]string, postFileMap map[string]multipartPostFile) (html, redirectURL string, err error) {
 	g.locker.Lock()
 	defer g.locker.Unlock()

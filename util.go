@@ -1,9 +1,9 @@
-// Copyright 2020 ratelimit Author(https://github.com/yudeguang/gather). All Rights Reserved.
+// Copyright 2020 ratelimit Author(https://github.com/yudeguang17/gather). All Rights Reserved.
 //
 // This Source Code Form is subject to the terms of the MIT License.
 // If a copy of the MIT was not distributed with this file,
-// You can obtain one at https://github.com/yudeguang/gather.
-//模拟浏览器进行数据采集包,可较方便的定义http头，同时全自动化处理cookies
+// You can obtain one at https://github.com/yudeguang17/gather.
+// 模拟浏览器进行数据采集包,可较方便的定义http头，同时全自动化处理cookies
 package gather
 
 import (
@@ -17,7 +17,7 @@ import (
 	"strconv"
 )
 
-//解压GZIP文件
+// 解压GZIP文件
 func Ungzip(data []byte) (string, error) {
 	reader, err := gzip.NewReader(bytes.NewReader(data))
 	if err != nil {
@@ -32,7 +32,7 @@ func Ungzip(data []byte) (string, error) {
 
 }
 
-//一个新的request对象
+// 一个新的request对象
 func (g *GatherStruct) newHttpRequest(method, URL, refererURL, cookies string, body io.Reader) (*http.Request, error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -73,7 +73,7 @@ func (g *GatherStruct) newHttpRequest(method, URL, refererURL, cookies string, b
 	return req, nil
 }
 
-//最终抓取HTML
+// 最终抓取HTML
 func (g *GatherStruct) request(req *http.Request) (html, redirectURL string, err error) {
 	resp, err := g.Client.Do(req)
 
