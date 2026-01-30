@@ -9,6 +9,7 @@ package gather
 import (
 	"bytes"
 	"compress/gzip"
+	"fmt"
 	"io"
 	"net/http"
 )
@@ -98,7 +99,7 @@ func (g *GatherStruct) request(req *http.Request) (html, redirectURL string, err
 
 	// 非2xx状态码，返回自定义状态错误（无原始错误可返回）
 	if resp.StatusCode < 200 || resp.StatusCode >= 300 {
-		return "", "", http.ErrAbortHandler
+		return "", "", fmt.Errorf("http状态码:%d", resp.StatusCode)
 	}
 
 	// 读取响应体，直接返回原始错误
