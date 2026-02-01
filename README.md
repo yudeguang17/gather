@@ -84,35 +84,26 @@ func main() {
 package main
 
 import (
-   "fmt"
-   "github.com/yudeguang17/gather"
-   "io/ioutil"
-   "time"
+	"fmt"
+	"github.com/yudeguang17/gather"
 )
 
 func main() {
-   // 1. 默认慢速配置创建采集器
-   ga := gather.NewGather("chrome", false)
-   ga.Client.Timeout = 10 * time.Minute
+	// 1. 创建采集器实例（推荐快速配置，适配内网/通用场景）
+	// 参数1：浏览器标识（如chrome/firefox）；参数2：是否开启调试模式
+	ga := gather.NewGather("chrome", false)
 
-   // 2. 发送GET请求
-   resp, err := ga.Client.Get("https://example.com")
-   if err != nil {
-      fmt.Printf("请求失败：%v\n", err)
-      return
-   }
-   defer resp.Body.Close()
+	// 2. 发送GET请求（核心：直接调用库封装的GetUtil方法，非底层Client.Get）
+	// 参数1：请求URL；参数2：Referer头（无则填空）；参数3：Cookie（无则填空）
+	html, redirectURL, err := ga.GetUtil("https://example.com", "", "")
+	if err != nil {
+		fmt.Printf("请求失败：%v\n", err)
+		return
+	}
 
-   // 3. 读取响应内容
-   body, err := ioutil.ReadAll(resp.Body)
-   if err != nil {
-      fmt.Printf("读取响应失败：%v\n", err)
-      return
-   }
-
-   // 4. 输出结果
-   fmt.Printf("响应状态码：%d\n", resp.StatusCode)
-   fmt.Printf("响应内容：%s\n", string(body))
+	// 3. 输出结果
+	fmt.Printf("响应内容：%s\n", html)
+	fmt.Printf("重定向地址：%s\n", redirectURL)
 }
 ```
 ### 4. 高级使用：连接池优化示例
